@@ -1,5 +1,9 @@
 # WD14TaggerWin
 
+## プロジェクト概要
+
+* VisualStudio 2022/.Net 8/C#/WPF
+
 ## 概要
 
 WD14taggerをWindows用のアプリとしてc#に移植しました。  
