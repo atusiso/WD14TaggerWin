@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="WD14TaggerWin.ImageInfoPrompt"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WD14TaggerWin"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded" SizeChanged="UserControl_SizeChanged">
+    <Grid>
+        <TextBox Name="TitleLabel" Text="Image Info" VerticalAlignment="Top" IsReadOnly="True" BorderThickness="0" Background="Transparent" IsHitTestVisible="True" TextWrapping="Wrap" />
+        <Grid Name="ParentGrid" Margin="0,21,0,0">
+            <StackPanel>
+                <Expander Name="Expander1" Header="Positive Prompt" Expanded="Expander_Expanded">
+                    <TextBox Name="ExpanderInner1" Margin="0,0,0,0" TextWrapping="Wrap" Text="" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Visible"/>
+                </Expander>
+                <Expander Name="Expander2" Header="Negative Prompt" Expanded="Expander_Expanded">
+                    <TextBox Name="ExpanderInner2" Margin="0,0,0,0" TextWrapping="Wrap" Text="" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Visible"/>
+                </Expander>
+                <Expander Name="Expander3" Header="All Info" Expanded="Expander_Expanded">
+                    <TextBox Name="ExpanderInner3" Margin="0,0,0,0" TextWrapping="Wrap" Text="" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Visible"/>
+                </Expander>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

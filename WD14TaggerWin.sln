@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36811.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WD14TaggerWin", "WD14TaggerWin\WD14TaggerWin.csproj", "{66000EC0-493F-4EC1-BBA5-CA8A811BAF50}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{66000EC0-493F-4EC1-BBA5-CA8A811BAF50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66000EC0-493F-4EC1-BBA5-CA8A811BAF50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66000EC0-493F-4EC1-BBA5-CA8A811BAF50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66000EC0-493F-4EC1-BBA5-CA8A811BAF50}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4CEC5622-7466-46B8-A13E-32EA3C76936B}
+	EndGlobalSection
+EndGlobal
