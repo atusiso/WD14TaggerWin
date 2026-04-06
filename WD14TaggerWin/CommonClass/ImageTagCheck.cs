@@ -47,41 +47,17 @@ namespace CommonClass
                 PngMetadata pngMeta = img.Metadata.GetPngMetadata();
                 foreach (PngTextData txt in pngMeta.TextData)
                 {
-                    // キーワードごとに分類
-                    if (txt.Keyword.ToLower() == "parameters")
+                    // 可能性がある文字列を内容チェック
+                    if ((txt.Keyword.ToLower() == "parameters") || (txt.Keyword.ToLower() == "prompt") || (txt.Keyword.ToLower() == "workflow") || (txt.Keyword.ToLower() == "Comment"))
                     {
-                        // Automatic1111
-                        title = "Automatic1111 PNG";
                         sourceString = txt.Value;
-                        (positivePrompt, negativePrompt) = ParseAutomatic1111(sourceString);
-                        return (title + imageSize, positivePrompt, negativePrompt, sourceString);
-                    }
-                    if ((txt.Keyword.ToLower() == "prompt") || (txt.Keyword.ToLower() == "workflow"))
-                    {
-                        // ComfyUI
-                        title = "ComfyUI PNG(" + txt.Keyword.ToLower()  + ")";
-                        sourceString = txt.Value;
-
-                        (positivePrompt, negativePrompt)  = ParseComfyUIAI(sourceString);
-                        return (title + imageSize, positivePrompt, negativePrompt, sourceString);
-                    }
-                    if (txt.Keyword.ToLower() == "Comment")
-                    {
-                        // NvelAI
-                        title = "NovelAI PNG";
-                        sourceString = txt.Value;
-
-                        (positivePrompt, negativePrompt) = ParseNovelAI(sourceString);
-                        return (title + imageSize, positivePrompt, negativePrompt, sourceString);
+                        (positivePrompt, negativePrompt) = ParseMetadatas(sourceString, ref title);
+                        if (positivePrompt != string.Empty) return (title + imageSize, positivePrompt, negativePrompt, sourceString);
                     }
                 }
 
-                // ステルスinfoの有無チェック
-                if (sourceString == string.Empty)
-                {
-                    sourceString = GetStealthInfo(img);
-                    if (sourceString != string.Empty) title = title + " Stealth";
-                }
+                // どれもタグとして無効の場合
+                sourceString = string.Empty;
             }
             else if (img.Metadata.DecodedImageFormat == JpegFormat.Instance)
             {
@@ -96,8 +72,6 @@ namespace CommonClass
                     exifProfile.TryGetValue(ExifTag.UserComment, out UserComment);
                     if (UserComment != null) sourceString = CheckString((string)UserComment.Value);
                 }
-
-                // joegはロス有圧縮なのでステルスは無し
             }
             else if (img.Metadata.DecodedImageFormat == WebpFormat.Instance)
             {
@@ -111,14 +85,43 @@ namespace CommonClass
                     exifProfile.TryGetValue(ExifTag.UserComment, out UserComment);
                     if (UserComment != null) sourceString = CheckString((string)UserComment.Value);
                 }
-
-                // ステルスinfoの有無チェック(webpはロスレス/ロス有混在なので一応調査)
-                if (sourceString == string.Empty)
-                {
-                    sourceString = GetStealthInfo(img);
-                    if (sourceString != string.Empty) title = title + " Stealth";
-                }
             }
+            else
+            {
+                title = " -";
+            }
+
+            // 取得したsourceStringの種別チェック
+            if (sourceString != string.Empty)
+            {
+                (positivePrompt, negativePrompt) = ParseMetadatas(sourceString, ref title);
+            }
+            // メタデータに有意な文字列がない
+            else
+            {
+                // ステルス情報のチェック
+                sourceString = GetStealthInfo(img);
+                if (sourceString != string.Empty)
+                {
+                    title = title + " Stealth";
+                    (positivePrompt, negativePrompt) = ParseMetadatas(sourceString, ref title);
+                }
+                else title = "none";
+            }
+
+            return (title + imageSize, positivePrompt, negativePrompt, sourceString);
+        }
+
+        /// <summary>
+        /// メタデータの解析
+        /// </summary>
+        /// <param name="sourceString">取得文字列</param>
+        /// <param name="title">出力タイトル文字列</param>
+        /// <returns>(positivePrompt,negativePrompt)</returns>
+        private static (string, string) ParseMetadatas(string sourceString, ref string title)
+        {
+            string positivePrompt = string.Empty;
+            string negativePrompt = string.Empty;
 
             // 取得したsourceStringの種別チェック
             if (sourceString != string.Empty)
@@ -175,13 +178,11 @@ namespace CommonClass
                     if (positivePrompt != string.Empty) title = "Automatic1111" + title;
                 }
             }
-            else
-            {
-                title = "none";
-            }
 
-            return (title + imageSize, positivePrompt, negativePrompt, sourceString);
+            return (positivePrompt, negativePrompt);
         }
+
+
 
         /// <summary>
         /// Automatic1111 PNG Infoチェック
@@ -222,11 +223,11 @@ namespace CommonClass
         /// <returns></returns>
         private static (string, string) ParseComfyUIAI(string sourceString)
         {
+            string positiveTag = string.Empty;
+            string negativeTag = string.Empty;
+
             try
             {
-                string positiveTag = string.Empty;
-                string negativeTag = string.Empty;
-
                 // Jsonパースを試みる
                 using (JsonDocument doc = JsonDocument.Parse(sourceString))
                 {
@@ -267,13 +268,23 @@ namespace CommonClass
                                     }
                                 }
                             }
+                            else if ((property.Name.ToLower() == "prompt") && (property.Value.ValueKind == JsonValueKind.String))
+                            {
+                                string? res = property.Value.GetString();
+                                positiveTag = res ?? string.Empty;
+                            }
+                            else if ((property.Name.ToLower() == "negative_prompt") && (property.Value.ValueKind == JsonValueKind.String))
+                            {
+                                string? res = property.Value.GetString();
+                                negativeTag = res ?? string.Empty;
+                            }
                         }
                     }
                 }
             }
             catch { }
 
-            return (string.Empty, string.Empty);
+            return (positiveTag, negativeTag);
         }
 
         /// <summary>
