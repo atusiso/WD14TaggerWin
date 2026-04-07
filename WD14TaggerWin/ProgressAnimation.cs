@@ -139,7 +139,7 @@ namespace WD14TaggerWin
             "AnimationCount",
             typeof(int),
             typeof(ProgressAnimation),
-            new FrameworkPropertyMetadata(8, FrameworkPropertyMetadataOptions.AffectsRender)
+            new FrameworkPropertyMetadata(16, FrameworkPropertyMetadataOptions.AffectsRender)
         );
 
         /// <summary>
@@ -183,9 +183,9 @@ namespace WD14TaggerWin
             double cx = this.ActualWidth / 2.0;
             double cy = this.ActualHeight / 2.0;
 
-            // 描画同心円半径(短い辺の1/2の半径)
-            double or = this.ActualWidth / 3.0;
-            if (this.ActualWidth > this.ActualHeight) or = this.ActualHeight / 3.0;
+            // 描画同心円半径(短い辺の1/4の半径)
+            double or = this.ActualWidth / 4.0;
+            if (this.ActualWidth > this.ActualHeight) or = this.ActualHeight / 4.0;
             double addRad = 2.0 * 3.14159 / AnimationCount;
 
             // 描画円半径(同心円の円周をアニメーション数の4倍で割る)

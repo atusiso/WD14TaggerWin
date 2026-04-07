@@ -23,6 +23,8 @@ namespace WD14TaggerWin
         /// <summary>制御対象のExpander一覧</summary>
         List<Expander> Expanders = new List<Expander>();
         /// <summary>制御Expanderの内容TextBox辞書</summary>
+        Dictionary<Expander, Grid> ExpanderHeightDic = new Dictionary<Expander, Grid>();
+        /// <summary>制御Expanderの内容TextBox辞書</summary>
         Dictionary<Expander, TextBox> ExpanderDic = new Dictionary<Expander, TextBox>();
 
         /// <summary>Expanderの閉じたときのサイズ</summary>
@@ -51,9 +53,9 @@ namespace WD14TaggerWin
             TitleLabel.Text = "Image Info " + title;
 
             // プロンプト設定
-            ExpanderInner1.Text = positivePrompt;
-            ExpanderInner2.Text = negativePrompt;
-            ExpanderInner3.Text = promptAll;
+            ExpanderInnerText1.Text = positivePrompt;
+            ExpanderInnerText2.Text = negativePrompt;
+            ExpanderInnerText3.Text = promptAll;
         }
 
         /// <summary>
@@ -67,9 +69,12 @@ namespace WD14TaggerWin
             Expanders.Add(Expander1);
             Expanders.Add(Expander2);
             Expanders.Add(Expander3);
-            ExpanderDic.Add(Expander1, ExpanderInner1);
-            ExpanderDic.Add(Expander2, ExpanderInner2);
-            ExpanderDic.Add(Expander3, ExpanderInner3);
+            ExpanderHeightDic.Add(Expander1, ExpanderInner1);
+            ExpanderHeightDic.Add(Expander2, ExpanderInner2);
+            ExpanderHeightDic.Add(Expander3, ExpanderInner3);
+            ExpanderDic.Add(Expander1, ExpanderInnerText1);
+            ExpanderDic.Add(Expander2, ExpanderInnerText2);
+            ExpanderDic.Add(Expander3, ExpanderInnerText3);
 
             // 展開後のコンテンツサイズ計算用
             ExpanderUnitHeight = Expander1.ActualHeight;
@@ -112,14 +117,44 @@ namespace WD14TaggerWin
         }
 
         /// <summary>
+        /// PositivePromptコピー
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Click_Tag1(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Clipboard.SetText(ExpanderInnerText1.Text);
+        }
+
+        /// <summary>
+        /// NegativePromptコピー
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Click_Tag2(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Clipboard.SetText(ExpanderInnerText2.Text);
+        }
+
+        /// <summary>
+        /// AllInfoコピー
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Click_Tag3(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Clipboard.SetText(ExpanderInnerText3.Text);
+        }
+
+        /// <summary>
         /// 内容物のサイズ変更
         /// </summary>
         private void ResizeInner()
         {
             foreach (Expander expander in Expanders)
             {
-                if (expander.IsExpanded) ExpanderDic[expander].Height = InnerHeight;
-                else ExpanderDic[expander].Height = 0;
+                if (expander.IsExpanded) ExpanderHeightDic[expander].Height = InnerHeight;
+                else ExpanderHeightDic[expander].Height = 0;
             }
         }
 

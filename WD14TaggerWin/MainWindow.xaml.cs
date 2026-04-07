@@ -1,7 +1,4 @@
-﻿using CommonClass;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -9,6 +6,7 @@ using System.Linq;
 using System.Numerics.Tensors;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +16,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using CommonClass;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using WD14TaggerWin.ModelManager;
 
 namespace WD14TaggerWin
@@ -57,6 +58,12 @@ namespace WD14TaggerWin
         /// <summary>モデルマネージャ</summary>
         private ModelMan Interrogators = new ModelMan();
 
+        /// <summary>起動ウィンドウ初期化</summary>
+        private bool IsWindowInit = false;
+
+        [DllImport("user32.dll")]
+        private static extern bool GetKeyboardState(byte[] lpKeyState);
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
@@ -74,6 +81,16 @@ namespace WD14TaggerWin
                 var ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(module.FileName);
                 this.Title += " " + ver.FileVersion;
             }
+
+            // 起動ホットキーをチェック
+            IsWindowInit = CheckStartHotkey();
+
+            // 起動引数をチェック
+            string[] args = Environment.GetCommandLineArgs();
+            foreach(string arg in args)
+            {
+                if (arg == "-i") IsWindowInit = true;
+            }
         }
 
         /// <summary>
@@ -83,6 +100,10 @@ namespace WD14TaggerWin
         /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // スケーリング変数の保持
+            defaultWidth = Width;
+            defaultHeight = Height;
+
             // 設定情報初期化
             try
             {
@@ -95,6 +116,8 @@ namespace WD14TaggerWin
                 ConfigFile.UpdateToFile();
             }
 
+            // ホットキーが押されている場合はウィンドウ位置の復元を行わない
+            if (IsWindowInit) ConfigFile.IsWinPosMemory = false;
             // ウィンドウ位置の復元と表示
             if (ConfigFile.IsWinPosMemory) RestorationWindow();
 
@@ -104,11 +127,15 @@ namespace WD14TaggerWin
             // ウィンドウ状態の復元
             WindowState = WindowState.Normal;
 
-            // スケーリング変数の保持
-            defaultWidth = Width;
-            defaultHeight = Height;
+            // スケーリング開始
+            double scale = ActualHeight / defaultHeight;
+            if (scale < 1) scale = 1;
+            if (scale > 1.5) scale = 1.5;
+            Scale.ScaleX = scale;
+            Scale.ScaleY = scale;
             isResizeStart = true;
 
+            // 処理中アニメーションを停止
             progressT.IsAnimate = false;
         }
 
@@ -388,6 +415,16 @@ namespace WD14TaggerWin
         }
 
         /// <summary>
+        /// 推論結果コピー
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Click_Tag(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Clipboard.SetText(resultTextBox.Text);
+        }
+
+        /// <summary>
         /// ウィンドウ位置復元
         /// </summary>
         private void RestorationWindow()
@@ -402,63 +439,6 @@ namespace WD14TaggerWin
                 // 設定に合わせてリサイズ
                 Width = ConfigFile.WindowWidth;
                 Height = ConfigFile.WindowHeight;
-
-                // モニタ一覧を取得するのにSystem.Windows.Formsが必要ってマジ？wpfで完結してや…
-                // ココから下のコードをコメン排除すると画面外にアプリが復元した時の判定と位置リセット機能が働く
-
-                //// WPF論理座標をスクリーン座標に変換してリストに登録(DPIが異なる環境用)
-                //System.Windows.Media.Matrix matrix = source.CompositionTarget.TransformToDevice;
-                //var winbounds = new List<System.Drawing.Point>();
-                //var leftTop = matrix.Transform(new System.Windows.Point(Left, Top));
-                //winbounds.Add(new System.Drawing.Point((int)leftTop.X, (int)leftTop.Y));
-                //var rightTop = matrix.Transform(new System.Windows.Point(Left + Width, Top));
-                //winbounds.Add(new System.Drawing.Point((int)rightTop.X, (int)rightTop.Y));
-                //var leftBottom = matrix.Transform(new System.Windows.Point(Left, Top + Height));
-                //winbounds.Add(new System.Drawing.Point((int)leftTop.X, (int)leftTop.Y));
-                //var rightBottom = matrix.Transform(new System.Windows.Point(Left + Width, Top + Height));
-                //winbounds.Add(new System.Drawing.Point((int)rightTop.X, (int)rightTop.Y));
-
-                //// 全モニタの範囲チェック
-                //var screens = System.Windows.Forms.Screen.AllScreens;
-                //int check = 0;
-                //foreach (var screen in screens)
-                //{
-                //    // windowの四隅座標がスクリーンに入っていれば対応ビットを1にする
-                //    int flag = 1;
-                //    foreach (var pt in winbounds)
-                //    {
-                //        if (screen.Bounds.Contains(pt)) check = check | flag;
-                //        flag = flag << 1;
-                //    }
-                //}
-
-                //// 画面外チェック(bit0～3が全部立っていない/どこかが画面外にある)
-                //if (check != 15)
-                //{
-                //    // アプリのサイズを初期値に戻す
-                //    this.Height = 793;
-                //    this.Width = 882;
-
-                //    // 代表モニタがある場合
-                //    System.Windows.Forms.Screen? pSc = System.Windows.Forms.Screen.PrimaryScreen;
-                //    if (pSc != null)
-                //    {
-                //        int pLeft = pSc.Bounds.Left;
-                //        int pTop = pSc.Bounds.Top;
-
-                //        // メインモニタの左上座標に移動
-                //        System.Windows.Media.Matrix matrix2 = source.CompositionTarget.TransformFromDevice;
-                //        var scPt = matrix.Transform(new System.Windows.Point(pLeft, pTop));
-                //        this.Top = scPt.X;
-                //        this.Left = scPt.Y;
-                //    }
-                //    else
-                //    {
-                //        // 規定windowが無い場合は0,0に移動
-                //        this.Top = 0;
-                //        this.Left = 0;
-                //    }
-                //}
             }
         }
 
@@ -721,6 +701,18 @@ namespace WD14TaggerWin
                 if (category != "* All *") categoryList.Items.Add(new ComboItemObject(category, category));
             }
             categoryList.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// 起動時ホットキーチェック
+        /// </summary>
+        /// <returns>true...ホットキーON/false...ホットキーOFF</returns>
+        private bool CheckStartHotkey()
+        {
+            // 左のShiftを押しているかチェック
+            byte[] keyStates = new byte[256];
+            if (!GetKeyboardState(keyStates)) return false;
+            return ((keyStates[KeyInterop.VirtualKeyFromKey(System.Windows.Input.Key.LeftShift)] & 0x80) != 0);
         }
 
     }

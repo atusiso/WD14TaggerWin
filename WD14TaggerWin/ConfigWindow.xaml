@@ -13,14 +13,14 @@
         <Label Content="モデルキャッシュパス" HorizontalAlignment="Left" Margin="19,16,0,0" VerticalAlignment="Top"/>
         <TextBox Name="WD14Path" Height="26" Margin="135,16,92,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
         <Label Content="モデルは数Gbyteを超えるものもあるので、空き容量の大きいドライブを指定してください。" HorizontalAlignment="Left" Margin="135,47,0,0" VerticalAlignment="Top"/>
-        <Button Content="Select" Margin="0,16,24,0" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="49" Click="Button_Click"/>
-        <Button Content="OK" Height="28" Margin="0,0,140,19" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="92" Click="Button_Click_2"/>
-        <Button Content="Cansel" Height="28" Margin="0,0,23,19" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="92" Click="Button_Click_1"/>
-        <CheckBox Name="IsUnderbarToSpace" Content="推論結果タグのアンダーバーを空白に変換" HorizontalAlignment="Left" Margin="19,79,0,0" VerticalAlignment="Top"/>
-        <CheckBox Name="IsBranketsEscap" Content="推論結果タグの括弧をエスケープ" HorizontalAlignment="Left" Margin="19,110,0,0" VerticalAlignment="Top"/>
-        <CheckBox Name="IsAutoTagging" Content="ファイルドロップで推論を自動開始" HorizontalAlignment="Left" Margin="19,139,0,0" VerticalAlignment="Top"/>
-        <CheckBox x:Name="IsResultToClipboad" Content="推論結果をクリップボードに自動コピー" HorizontalAlignment="Left" Margin="19,168,0,0" VerticalAlignment="Top"/>
-        <CheckBox x:Name="IsWinPosMemory" Content="ウィンドウの位置を覚える" HorizontalAlignment="Left" Margin="19,197,0,0" VerticalAlignment="Top"/>
-        <CheckBox x:Name="IsMLDanbooruResizeNew" Content="ML Danbooruモデルの画像縮小方式を変更する" HorizontalAlignment="Left" Margin="19,229,0,0" VerticalAlignment="Top"/>
+        <Button Content="Select" Margin="0,16,24,0" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="49" Click="Button_Click" Cursor="Hand"/>
+        <Button Content="OK" Height="28" Margin="0,0,140,19" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="92" Click="Button_Click_2" Cursor="Hand"/>
+        <Button Content="Cansel" Height="28" Margin="0,0,23,19" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="92" Click="Button_Click_1" Cursor="Hand"/>
+        <CheckBox Name="IsUnderbarToSpace" Content="推論結果タグのアンダーバーを空白に変換" HorizontalAlignment="Left" Margin="19,79,0,0" VerticalAlignment="Top" Cursor="Hand"/>
+        <CheckBox Name="IsBranketsEscap" Content="推論結果タグの括弧をエスケープ" HorizontalAlignment="Left" Margin="19,110,0,0" VerticalAlignment="Top" Cursor="Hand"/>
+        <CheckBox Name="IsAutoTagging" Content="ファイルドロップで推論を自動開始" HorizontalAlignment="Left" Margin="19,139,0,0" VerticalAlignment="Top" Cursor="Hand"/>
+        <CheckBox x:Name="IsResultToClipboad" Content="推論結果をクリップボードに自動コピー" HorizontalAlignment="Left" Margin="19,168,0,0" VerticalAlignment="Top" Cursor="Hand"/>
+        <CheckBox x:Name="IsWinPosMemory" Content="ウィンドウの位置を覚える" HorizontalAlignment="Left" Margin="19,197,0,0" VerticalAlignment="Top" Cursor="Hand"/>
+        <CheckBox x:Name="IsMLDanbooruResizeNew" Content="ML Danbooruモデルの画像縮小方式を変更する" HorizontalAlignment="Left" Margin="19,229,0,0" VerticalAlignment="Top" Cursor="Hand"/>
     </Grid>
 </Window>

@@ -131,6 +131,7 @@ namespace CommonClass
                 {
                     using (JsonDocument doc = JsonDocument.Parse(sourceString))
                     {
+                        // ComfyUIかNvelAIかチェック
                         JsonElement root = doc.RootElement;
                         if (root.ValueKind == JsonValueKind.Object)
                         {
@@ -151,8 +152,6 @@ namespace CommonClass
                                         if (escapedStr != null)
                                         {
                                             // inner JSONの復元とチェック
-                                            //escapedStr = escapedStr.Replace("\\\"", "\"");
-                                            //escapedStr = escapedStr.Replace("\\\\", "\\");
                                             (positivePrompt, negativePrompt) = ParseNovelAI(escapedStr);
                                             if (positivePrompt != string.Empty) title = "NovelAI" + title;
                                             isNovelAI = true;
@@ -164,7 +163,7 @@ namespace CommonClass
                             // NovelAIチェックが通らなかった
                             if (isNovelAI == false)
                             {
-                                // Comfyとして処理
+                                // Comfyとして処理を試みる
                                 (positivePrompt, negativePrompt) = ParseComfyUIAI(sourceString);
                                 if (positivePrompt != string.Empty) title = "ComfyUI" + title;
                             }
