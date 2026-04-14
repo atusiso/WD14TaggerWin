@@ -12,6 +12,8 @@ namespace WD14TaggerWin.ModelManager
 {
     public abstract class AbstractTaggerModel : IDisposable
     {
+        private static string ModelDownloadCompleteFile = ".complete";
+
         /// <summary>
         /// ダウンロード進捗処理
         /// </summary>
@@ -25,7 +27,16 @@ namespace WD14TaggerWin.ModelManager
         {
             WaifuDiffusionInterrogator = 0,
             MLDanbooruInterrogator = 1,
-            CamieTaggerInterrogator = 2
+            CamieTaggerInterrogator = 2,
+            ClTaggerInterrogator = 3
+        }
+
+        /// <summary>モデルライセンス種別</summary>
+        public enum licenseType : int
+        {
+            Apache2_0 = 0,
+            MIT = 1,
+            GPL3_0 = 2
         }
 
         /// <summary>モデル種別</summary>
@@ -39,6 +50,9 @@ namespace WD14TaggerWin.ModelManager
         public required string model_path { get; set; }
         /// <summary>タグファイルパス(リポジトリパス)</summary>
         public required string tag_path { get; set; }
+
+        /// <summary>モデルライセンス</summary>
+        public required licenseType license { get; set; }
 
         /// <summary>キャッシュチェック</summary>
         public bool IsCacheAvail { get; set; } = false;
@@ -111,21 +125,37 @@ namespace WD14TaggerWin.ModelManager
         public void CheckCache(string key, string cachePath)
         {
             string path = Path.Combine(cachePath, key);
+            string completeMark = Path.Combine(path, ModelDownloadCompleteFile);
 
-            using (var downloader = new HuggingFaceDownloader())
+            // ダウンロード完了ファイルがある場合モデルキャッシュ有と判断
+            if (File.Exists(completeMark)) IsCacheAvail = true;
+            else
             {
-                IsCacheAvail = downloader.AreFilesAvailable([model_path, tag_path], path);
+                // ネットワーク上のファイルと比較してダウンロード完了チェック
+                using (var downloader = new HuggingFaceDownloader())
+                {
+                    IsCacheAvail = downloader.AreFilesAvailable([model_path, tag_path], path);
+                    if (IsCacheAvail)
+                    {
+                        // モデルキャッシュがある場合は完了ファイルを生成(次回からネットワークに接続しない)
+                        using (var fs = new FileStream(completeMark, FileMode.Create, FileAccess.Write))
+                        {
+                        }
+                    }
+                }
+            }
 
-                if (IsCacheAvail)
-                {
-                    model_file_path = Path.Combine(path, model_path);
-                    tag_file_path = Path.Combine(path, tag_path);
-                }
-                else
-                {
-                    model_file_path = string.Empty;
-                    tag_file_path = string.Empty;
-                }
+            // キャッシュがある場合
+            if (IsCacheAvail)
+            {
+                model_file_path = Path.Combine(path, model_path);
+                tag_file_path = Path.Combine(path, tag_path);
+            }
+            // キャッシュファイルが無い場合
+            else
+            {
+                model_file_path = string.Empty;
+                tag_file_path = string.Empty;
             }
         }
 

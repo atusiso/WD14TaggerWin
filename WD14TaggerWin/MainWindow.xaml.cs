@@ -29,6 +29,9 @@ namespace WD14TaggerWin
     /// <remarks>MVVMは犬に食わせた</remarks>
     public partial class MainWindow : Window
     {
+        /// <summary>タグ表の最大表示数</summary>
+        private static int MaxTagGraph = 1024;
+
         /// <summary>スケーリング制御フラグ</summary>
         private bool isResizeStart = false;
         /// <summary>スケーリング用基準幅(起動状態の値を基準にする)</summary>
@@ -37,6 +40,8 @@ namespace WD14TaggerWin
         private double defaultHeight;
         /// <summary>精度スライダー編集制御フラグ</summary>
         private bool isaccuracyChane = false;
+        /// <summary>結果反映(ディレイ処理用)</summary>
+        private bool isResultUpdate = false;
 
         /// <summary>タガー利用可否チェック</summary>
         private bool isTaggerValid = false;
@@ -46,11 +51,8 @@ namespace WD14TaggerWin
         private SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>? tagetImage = null;
         /// <summary>ダウンロード終了フラグ</summary>
         private bool DLComplete = true;
-
-        /// <summary>結果カテゴリ辞書</summary>
-        private Dictionary<string, List<string>> categoryDic = new();
-        /// <summary>結果タグ辞書</summary>
-        private Dictionary<string, float> resultTagDic = new();
+        /// <summary>推論結果</summary>
+        private ResultTagSet ResultTags = new ResultTagSet();
 
         /// <summary>設定ファイル</summary>
         private AppSettingXmlFile ConfigFile = new AppSettingXmlFile();
@@ -60,6 +62,9 @@ namespace WD14TaggerWin
 
         /// <summary>起動ウィンドウ初期化</summary>
         private bool IsWindowInit = false;
+
+        /// <summary>UIタイマー</summary>
+        private DispatcherTimer UITimer = new DispatcherTimer();
 
         [DllImport("user32.dll")]
         private static extern bool GetKeyboardState(byte[] lpKeyState);
@@ -137,6 +142,11 @@ namespace WD14TaggerWin
 
             // 処理中アニメーションを停止
             progressT.IsAnimate = false;
+
+            // UIタイマー開始
+            UITimer.Tick += Timer_Tick;
+            UITimer.Interval = TimeSpan.FromMilliseconds(500);
+            UITimer.Start();
         }
 
         /// <summary>
@@ -177,6 +187,25 @@ namespace WD14TaggerWin
         }
 
         /// <summary>
+        /// タイマー処理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Timer_Tick(object? sender, EventArgs e)
+        {
+            // 結果反映フラグがオンの場合
+            if (isResultUpdate)
+            {
+                // 表示結果を消去してタグを結果に反映
+                ResultTags.InitViewResult();
+                ResultTags.ApplyThreshold((float)accuracySlider.Value, ConfigFile.IsUnderScoreToSpace, ConfigFile.IsTagBracketsEscape);
+                CreateResultTags();
+
+                isResultUpdate = false;
+            }
+        }
+
+        /// <summary>
         /// タグ付けボタン押下
         /// </summary>
         /// <param name="sender"></param>
@@ -204,6 +233,9 @@ namespace WD14TaggerWin
 
             // 結果をテキストに設定
             accuracyTextBox.Text = accuracySlider.Value.ToString("0.00");
+
+            // 結果を画面に反映準備
+            isResultUpdate = true;
 
             isaccuracyChane = false;
         }
@@ -233,6 +265,9 @@ namespace WD14TaggerWin
             }
             // 結果をスライダーに設定
             accuracySlider.Value = res;
+
+            // 結果を画面に反映準備
+            isResultUpdate = true;
 
             isaccuracyChane = false;
         }
@@ -374,44 +409,7 @@ namespace WD14TaggerWin
         /// <param name="e"></param>
         private void categoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // 結果タグ
-            StringBuilder sb = new StringBuilder();
-
-            // スタックパネルのグラフバーを解放
-            foreach (var child in resultStackPanel.Children)
-            {
-                if (child is IDisposable disposableControl) disposableControl.Dispose();
-            }
-            resultStackPanel.Children.Clear();
-
-            // 選択カテゴリに応じてカテゴリ辞書決定
-            if (categoryList.SelectedItem != null)
-            {
-                ComboItemObject selCat = (ComboItemObject)categoryList.SelectedItem;
-                string category = selCat.Value;
-
-                if (categoryDic.ContainsKey(category))
-                {
-                    foreach (string tag in categoryDic[category])
-                    {
-                        if (sb.Length != 0) sb.Append(", ");
-                        sb.Append(tag);
-
-                        // スタックパネルのグラフバーを生成
-                        if (resultTagDic.ContainsKey(tag))
-                        {
-                            var tagLine = new TagLine(tag, resultTagDic[tag], 20);
-                            resultStackPanel.Children.Add(tagLine);
-                        }
-                    }
-                }
-            }
-
-            // 結果タグ一覧を表示
-            resultTextBox.Text = sb.ToString(); ;
-
-            // 結果をクリップボードにコピー
-            if (ConfigFile.IsReslutToClipbord) System.Windows.Clipboard.SetText(resultTextBox.Text);
+            CreateResultTags();
         }
 
         /// <summary>
@@ -531,15 +529,15 @@ namespace WD14TaggerWin
         /// </summary>
         private void ClearTags()
         {
+            // 前の推論結果を削除
+            ResultTags.InitResult();
+
             // カテゴリリスト消去
-            categoryDic.Clear();
-            categoryDic.Add("* All *", new List<string>());
             categoryList.Items.Clear();
             categoryList.Items.Add(new ComboItemObject("すべて表示", "* All *"));
             categoryList.SelectedIndex = -1;
 
             // 結果テキストボックスをクリア
-            resultTagDic.Clear();
             resultTextBox.Text = string.Empty;
 
             // スタックパネルのグラフバーを解放
@@ -548,6 +546,57 @@ namespace WD14TaggerWin
                 if (child is IDisposable disposableControl) disposableControl.Dispose();
             }
             resultStackPanel.Children.Clear();
+        }
+
+        /// <summary>
+        /// 結果タグ画面の作成
+        /// </summary>
+        private void CreateResultTags()
+        {
+            // 結果タグ
+            StringBuilder sb = new StringBuilder();
+
+            // スタックパネルのグラフバーを解放
+            foreach (var child in resultStackPanel.Children)
+            {
+                if (child is IDisposable disposableControl) disposableControl.Dispose();
+            }
+            resultStackPanel.Children.Clear();
+
+            // 選択カテゴリに応じてカテゴリ辞書決定
+            if (categoryList.SelectedItem != null)
+            {
+                ComboItemObject selCat = (ComboItemObject)categoryList.SelectedItem;
+                string category = selCat.Value;
+
+                int tagNum = 0;
+                foreach (string tag in ResultTags.GetCategoryTags(category))
+                {
+                    if (sb.Length != 0) sb.Append(", ");
+                    sb.Append(tag);
+
+                    // スタックパネルのグラフバーを生成
+                    if ((ResultTags.resultTagDic.ContainsKey(tag)) && (tagNum < MaxTagGraph))
+                    {
+                        var tagLine = new TagLine(tag, ResultTags.resultTagDic[tag], 20);
+                        resultStackPanel.Children.Add(tagLine);
+
+                        // 表示が1024タグを超えたら無視
+                        tagNum++;
+                        if (tagNum == MaxTagGraph)
+                        {
+                            tagLine = new TagLine($"* Exceeded {MaxTagGraph.ToString()} tags *", 0.0f, 20);
+                            resultStackPanel.Children.Add(tagLine);
+                        }
+                    }
+                }
+            }
+
+            // 結果タグ一覧を表示
+            resultTextBox.Text = sb.ToString(); ;
+
+            // 結果をクリップボードにコピー
+            if (ConfigFile.IsReslutToClipbord) System.Windows.Clipboard.SetText(resultTextBox.Text);
         }
 
         /// <summary>
@@ -568,6 +617,9 @@ namespace WD14TaggerWin
             AbstractTaggerModel? model = Interrogators[interrogator];
             if (model != null)
             {
+                // モデルキャッシュ確認
+                model.CheckCache(interrogator, ConfigFile.CachePath);
+
                 // モデルがメモリに無くキャッシュファイルもない場合ダウンロードを実施してタガーを実施
                 if ((model.IsModelLoad == false) && (model.IsCacheAvail == false)) DownloadModelTask(interrogator, tagetImage);
                 // メモリにロードされているか、キャッシュファイルがある場合タガーを実施
@@ -656,39 +708,12 @@ namespace WD14TaggerWin
             // 推論の実行(非同期タスク)
             await Task.Run(() =>
             {
-                var res = model.interrogate(image, ConfigFile.IsMLDanbooruResizeNew);
+                // 推論の実施と結果の格納
+                ResultTags.SetResult(model.interrogate(image, ConfigFile.IsMLDanbooruResizeNew));
 
-                // 結果タグ一覧から閾値順にソート
-                var sortedDict = res.Item2.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
-                foreach (var kvPair in sortedDict)
-                {
-                    // 閾値以上のタグのみに絞る
-                    if (kvPair.Value > threthold)
-                    {
-                        // エスケープ処理
-                        string tag = kvPair.Key;
-                        if (ConfigFile.IsUnderScoreToSpace) tag = tag.Replace('_', ' ');
-                        if (ConfigFile.IsTagBracketsEscape)
-                        {
-                            tag = tag.Replace("(", "\\(");
-                            tag = tag.Replace(")", "\\)");
-                        }
-                        // 結果タグリストに登録
-                        resultTagDic.Add(tag, kvPair.Value);
-
-                        // カテゴリ辞書に登録
-                        categoryDic["* All *"].Add(tag);
-                        string category = (res.Item3.ContainsKey(tag) ? res.Item3[tag] : string.Empty);
-                        if (category != string.Empty)
-                        {
-                            if (categoryDic.ContainsKey(category) == false)
-                            {
-                                categoryDic.Add(category, new List<string>());
-                            }
-                            categoryDic[category].Add(tag);
-                        }
-                    }
-                }
+                // 閾値を推論結果に適用
+                ResultTags.InitViewResult();
+                ResultTags.ApplyThreshold(threthold, ConfigFile.IsUnderScoreToSpace, ConfigFile.IsTagBracketsEscape);
             });
 
             // プログレスを非表示に
@@ -696,7 +721,7 @@ namespace WD14TaggerWin
             progressT.IsAnimate = false;
 
             // カテゴリリストを追加
-            foreach (var category in categoryDic.Keys)
+            foreach (var category in ResultTags.GetCategories())
             {
                 if (category != "* All *") categoryList.Items.Add(new ComboItemObject(category, category));
             }

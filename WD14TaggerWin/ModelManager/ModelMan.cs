@@ -18,41 +18,45 @@ namespace WD14TaggerWin.ModelManager
         public Dictionary<string, AbstractTaggerModel> interrogators = new Dictionary<string, AbstractTaggerModel>()
         {
              { "wd14-vit.v1", new WaifuDiffusionTaggerModel
-                { name="WD14 ViT v1", repo_id="SmilingWolf/wd-v1-4-vit-tagger", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 ViT v1", repo_id="SmilingWolf/wd-v1-4-vit-tagger", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd14-vit.v2", new WaifuDiffusionTaggerModel
-                { name="WD14 ViT v2", repo_id="SmilingWolf/wd-v1-4-vit-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 ViT v2", repo_id="SmilingWolf/wd-v1-4-vit-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd14-convnext.v1", new WaifuDiffusionTaggerModel
-                { name="WD14 ConvNeXT v1", repo_id="SmilingWolf/wd-v1-4-convnext-tagger", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 ConvNeXT v1", repo_id="SmilingWolf/wd-v1-4-convnext-tagger", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd14-convnext.v2", new WaifuDiffusionTaggerModel
-                { name="WD14 ConvNeXT v2", repo_id="SmilingWolf/wd-v1-4-convnext-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 ConvNeXT v2", repo_id="SmilingWolf/wd-v1-4-convnext-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd14-convnextv2.v1", new WaifuDiffusionTaggerModel
-                { name="WD14 ConvNeXTV2 v1", repo_id="SmilingWolf/wd-v1-4-convnextv2-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 ConvNeXTV2 v1", repo_id="SmilingWolf/wd-v1-4-convnextv2-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd14-swinv2-v1", new WaifuDiffusionTaggerModel
-                { name="WD14 SwinV2 v1", repo_id="SmilingWolf/wd-v1-4-swinv2-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 SwinV2 v1", repo_id="SmilingWolf/wd-v1-4-swinv2-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd-v1-4-moat-tagger.v2", new WaifuDiffusionTaggerModel
-                { name="WD14 moat tagger v2", repo_id="SmilingWolf/wd-v1-4-moat-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 moat tagger v2", repo_id="SmilingWolf/wd-v1-4-moat-tagger-v2", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd-v1-4-vit-tagger.v3", new WaifuDiffusionTaggerModel
-                { name="WD14 ViT v3", repo_id="SmilingWolf/wd-vit-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 ViT v3", repo_id="SmilingWolf/wd-vit-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd-v1-4-convnext-tagger.v3", new WaifuDiffusionTaggerModel
-                { name="WD14 ConvNext v3", repo_id="SmilingWolf/wd-convnext-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 ConvNext v3", repo_id="SmilingWolf/wd-convnext-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd-v1-4-swinv2-tagger.v3", new WaifuDiffusionTaggerModel
-                { name="WD14 SwinV2 v3", repo_id="SmilingWolf/wd-swinv2-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD14 SwinV2 v3", repo_id="SmilingWolf/wd-swinv2-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd-vit-large-tagger-v3", new WaifuDiffusionTaggerModel
-                { name="WD ViT-Large Tagger v3", repo_id="SmilingWolf/wd-vit-large-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD ViT-Large Tagger v3", repo_id="SmilingWolf/wd-vit-large-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "wd-eva02-large-tagger-v3", new WaifuDiffusionTaggerModel
-                { name="WD EVA02-Large Tagger v3", repo_id="SmilingWolf/wd-eva02-large-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv"}}
+                { name="WD EVA02-Large Tagger v3", repo_id="SmilingWolf/wd-eva02-large-tagger-v3", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "z3d-e621-convnext-toynya", new WaifuDiffusionTaggerModel
-                { name="Z3D-E621-Convnext(toynya)", repo_id="toynya/Z3D-E621-Convnext", model_path= "model.onnx", tag_path = "tags-selected.csv"}}
+                { name="Z3D-E621-Convnext(toynya)", repo_id="toynya/Z3D-E621-Convnext", model_path= "model.onnx", tag_path = "tags-selected.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "z3d-e621-convnext-silveroxides", new WaifuDiffusionTaggerModel
-                { name="Z3D-E621-Convnext(silveroxides)", repo_id="silveroxides/Z3D-E621-Convnext", model_path= "model.onnx", tag_path = "tags-selected.csv"}}
+                { name="Z3D-E621-Convnext(silveroxides)", repo_id="silveroxides/Z3D-E621-Convnext", model_path= "model.onnx", tag_path = "tags-selected.csv", license = AbstractTaggerModel.licenseType.Apache2_0}}
             ,{ "mld-caformer.dec-5-97527", new MLDanbooruTaggerModel
-                { name="ML-Danbooru Caformer dec-5-97527", repo_id="deepghs/ml-danbooru-onnx", model_path= "ml_caformer_m36_dec-5-97527.onnx", tag_path = "classes.json"}}
+                { name="ML-Danbooru Caformer dec-5-97527", repo_id="deepghs/ml-danbooru-onnx", model_path= "ml_caformer_m36_dec-5-97527.onnx", tag_path = "classes.json", license = AbstractTaggerModel.licenseType.MIT}}
             ,{ "mld-tresnetd.6-30000", new MLDanbooruTaggerModel
-                { name="ML-Danbooru TResNet-D 6-30000", repo_id="deepghs/ml-danbooru-onnx", model_path= "TResnet-D-FLq_ema_6-30000.onnx", tag_path = "classes.json"}}
+                { name="ML-Danbooru TResNet-D 6-30000", repo_id="deepghs/ml-danbooru-onnx", model_path= "TResnet-D-FLq_ema_6-30000.onnx", tag_path = "classes.json", license = AbstractTaggerModel.licenseType.MIT}}
             ,{ "camie-tagger", new CamieTaggerModel
-                { name="Camie Tagger", repo_id="Camais03/camie-tagger", model_path= "model_initial.onnx", tag_path = "model_initial_metadata.json"}}
+                { name="Camie Tagger", repo_id="Camais03/camie-tagger", model_path= "model_initial.onnx", tag_path = "model_initial_metadata.json", license = AbstractTaggerModel.licenseType.GPL3_0}}
             ,{ "camie-tagger-v2", new CamieTaggerModel
-                { name="Camie Tagger v2", repo_id="Camais03/camie-tagger-v2", model_path= "camie-tagger-v2.onnx", tag_path = "camie-tagger-v2-metadata.json"}}
+                { name="Camie Tagger v2", repo_id="Camais03/camie-tagger-v2", model_path= "camie-tagger-v2.onnx", tag_path = "camie-tagger-v2-metadata.json", license = AbstractTaggerModel.licenseType.GPL3_0}}
+            ,{ "cl-tagger-1.02", new ClTaggerModel
+                { name="Cl Tagger 1.02", repo_id="cella110n/cl_tagger", model_path= "cl_tagger_1_02/model.onnx", tag_path = "cl_tagger_1_02/tag_mapping.json", license = AbstractTaggerModel.licenseType.Apache2_0}}
+            ,{ "cl-tagger-1.02_opt", new ClTaggerModel
+                { name="Cl Tagger 1.02 optimized", repo_id="cella110n/cl_tagger", model_path= "cl_tagger_1_02/model_optimized.onnx", tag_path = "cl_tagger_1_02/tag_mapping.json", license = AbstractTaggerModel.licenseType.Apache2_0}}
         };
 
         /// <summary>キャッシュパス</summary>
@@ -88,11 +92,11 @@ namespace WD14TaggerWin.ModelManager
             // キャッシュパスの変更
             CachePath = cachePath;
 
-            // キャッシュの有無を再チェック
-            foreach(var interrogator in interrogators)
-            {
-                interrogator.Value.CheckCache(interrogator.Key, cachePath);
-            }
+            //// キャッシュの有無を再チェック
+            //foreach(var interrogator in interrogators)
+            //{
+            //    interrogator.Value.CheckCache(interrogator.Key, cachePath);
+            //}
         }
 
         /// <summary>
