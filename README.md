@@ -28,7 +28,7 @@ Windows(x64)の環境用バイナリは[ここ](https://github.com/atusiso/WD14T
 スマートアプリコントロール等に怒られた場合はあきらめてください。  
 推論開始で落ちる場合は[Visual C++ v14 再頒布可能パッケージ](https://aka.ms/vc14/vc_redist.x64.exe)をインストールしてみてください。  
   
-  <img width="450" height="387" alt="Image" src="https://github.com/user-attachments/assets/70efd254-dfc1-4b4f-9669-5dfafe1370c8" />
+  <img width="351" height="312" alt="Image" src="https://github.com/user-attachments/assets/5628ee9d-dfdb-4b0a-86bc-831b8335695c" />
   
 一番右上の設定ボタンでまず設定してください。  
 * モデルキャッシュパスを作成して指定してください。  
