@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -190,6 +191,11 @@ namespace WD14TaggerWin.ModelManager
                     // インデックスが存在する場合
                     if (kvPair.Value < output.Length)
                     {
+                        // NANの場合0.0 無限の場合0～1に収束
+                        if (float.IsNaN(output[kvPair.Value])) output[kvPair.Value] = 0.0f;
+                        if (float.IsInfinity(output[kvPair.Value])) output[kvPair.Value] = 1.0f;
+                        if (float.IsNegativeInfinity(output[kvPair.Value])) output[kvPair.Value] = 0.0f;
+
                         // Softmax処理
                         float prob = (1.0f / (1.0f + (float)Math.Exp(-Math.Clamp(output[kvPair.Value], -30, 30))));
                         string category = (tagToCategory.ContainsKey(kvPair.Key) ? tagToCategory[kvPair.Key] : string.Empty);

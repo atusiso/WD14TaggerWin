@@ -54,6 +54,12 @@ namespace WD14TaggerWin.ModelManager
         /// <summary>モデルライセンス</summary>
         public required licenseType license { get; set; }
 
+        /// <summary>著者</summary>
+        public required string author { get; set; }
+
+        /// <summary>サイト</summary>
+        public required string siteuri { get; set; }
+
         /// <summary>キャッシュチェック</summary>
         public bool IsCacheAvail { get; set; } = false;
 

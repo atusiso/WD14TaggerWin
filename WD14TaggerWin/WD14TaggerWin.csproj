@@ -12,9 +12,10 @@
     <PublishTrimmed>false</PublishTrimmed>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeNativeLibrariesInSingleFile>true</IncludeNativeLibrariesInSingleFile>
     <ApplicationIcon>tag_icon.ico</ApplicationIcon>
     <PlatformTarget>x64</PlatformTarget>
-    <FileVersion>1.0.0.6</FileVersion>
+    <FileVersion>1.0.0.7</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -26,11 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Config.png" />
-    <None Remove="Resources\Copyright.png" />
     <None Remove="Resources\foo.gif" />
     <None Remove="Resources\tag_icon.png" />
-    <None Remove="Resources\trashbox.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,11 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\Config.png" />
-    <Resource Include="Resources\Copyright.png" />
-    <Resource Include="Resources\foo.gif" />
     <Resource Include="Resources\tag_icon.png" />
-    <Resource Include="Resources\trashbox.png" />
   </ItemGroup>
 
 </Project>

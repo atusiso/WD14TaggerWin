@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WD14TaggerWin"
         mc:Ignorable="d"
-        Title="設定画面" Height="337" Width="697" Loaded="Window_Loaded" MinWidth="647" MinHeight="264">
+        Title="設定画面" Height="337" Width="697" Loaded="Window_Loaded" MinWidth="647" MinHeight="322">
     <Grid>
         <Grid.LayoutTransform>
             <ScaleTransform x:Name="Scale"/>
