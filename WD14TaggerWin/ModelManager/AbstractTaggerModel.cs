@@ -28,7 +28,8 @@ namespace WD14TaggerWin.ModelManager
             WaifuDiffusionInterrogator = 0,
             MLDanbooruInterrogator = 1,
             CamieTaggerInterrogator = 2,
-            ClTaggerInterrogator = 3
+            ClTaggerInterrogator = 3,
+            PiaiTaggerInterrogator = 4
         }
 
         /// <summary>モデルライセンス種別</summary>
@@ -214,7 +215,7 @@ namespace WD14TaggerWin.ModelManager
         /// </summary>
         /// <param name="souirceImg">対象イメージ</param>
         /// <returns>結果タグ辞書</returns>
-        public abstract (Dictionary<string, float>, Dictionary<string, float>, Dictionary<string, string>) interrogate(Image<Rgba32> image, bool isFlag);
+        public abstract (Dictionary<string, float>, Dictionary<string, float>, Dictionary<string, string>) interrogate(Image<Rgba32> image, bool isFlag, float optionalThreshold);
 
         /// <summary>
         /// モデルのアンロード

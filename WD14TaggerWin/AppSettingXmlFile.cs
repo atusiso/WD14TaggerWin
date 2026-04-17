@@ -22,6 +22,8 @@ namespace WD14TaggerWin
         public string Interrogator = string.Empty;
         /// <summary>閾値</summary>
         public string Threshold = "0.35";
+        /// <summary>閾値2</summary>
+        public string Threshold2 = "0.8";
         // ----------------------------------------------------------------------------------------------------------
         /// <summary>推論結果タグのアンダーバーをスペースに変換する</summary>
         public bool IsUnderScoreToSpace = true;
@@ -193,8 +195,9 @@ namespace WD14TaggerWin
             CachePath = srcObj.CachePath;
             Interrogator = srcObj.Interrogator;
             Threshold = srcObj.Threshold;
+            Threshold2 = srcObj.Threshold2;
 
-            IsUnderScoreToSpace  = srcObj.IsUnderScoreToSpace;
+            IsUnderScoreToSpace = srcObj.IsUnderScoreToSpace;
             IsTagBracketsEscape = srcObj.IsTagBracketsEscape;
             IsDropToTagging = srcObj.IsDropToTagging;
             IsReslutToClipbord = srcObj.IsReslutToClipbord;
@@ -225,6 +228,7 @@ namespace WD14TaggerWin
             res.CachePath = CachePath;
             res.Interrogator = Interrogator;
             res.Threshold = Threshold;
+            res.Threshold2 = Threshold2;
 
             res.IsUnderScoreToSpace = IsUnderScoreToSpace;
             res.IsTagBracketsEscape = IsTagBracketsEscape;

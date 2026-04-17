@@ -61,6 +61,7 @@ namespace WD14TaggerWin
             IsResultToClipboad.IsChecked = ConfigData?.IsReslutToClipbord;
             IsWinPosMemory.IsChecked = ConfigData?.IsWinPosMemory;
             IsMLDanbooruResizeNew.IsChecked = ConfigData?.IsMLDanbooruResizeNew;
+            thrsholdSlider.Value = double.Parse(ConfigData?.Threshold2 ?? "0.8");
         }
 
         /// <summary>
@@ -104,6 +105,7 @@ namespace WD14TaggerWin
                 ConfigData.IsReslutToClipbord = (IsResultToClipboad.IsChecked ?? false);
                 ConfigData.IsWinPosMemory = (IsWinPosMemory.IsChecked ?? false);
                 ConfigData.IsMLDanbooruResizeNew = (IsMLDanbooruResizeNew.IsChecked ?? false);
+                ConfigData.Threshold2 = thrsholdSlider.Value.ToString();
 
                 ConfigData.UpdateToFile();
             }

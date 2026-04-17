@@ -50,6 +50,8 @@ namespace WD14TaggerWin
         // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
         // Windowスケーリング関係
         // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
+        /// <summary>ウィンドウ起動位置初期化(起動時に左シフトを押し続けるか、-iオプションをつけて起動すると設定で覚えたWindow座標を無視)</summary>
+        private bool IsWindowInit = false;
         /// <summary>スケーリング制御フラグ</summary>
         private bool IsResizeStart = false;
         /// <summary>スケーリング用基準幅(起動状態の値を基準にする)</summary>
@@ -62,20 +64,12 @@ namespace WD14TaggerWin
         // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
         /// <summary>推論モデルマネージャ</summary>
         private ModelMan Interrogators = new ModelMan();
-        /// <summary>推論対象画像パス</summary>
-        private string TargetImagePath = string.Empty;
-        /// <summary>推論対象画像実体</summary>
-        private SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>? TagetImage = null;
         /// <summary>最終推論結果</summary>
         private ResultTagSet ResultTags = new ResultTagSet();
 
         // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
         // UI制御フラグ関係
         // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
-        /// <summary>ウィンドウ起動位置初期化(起動時に左シフトを押し続けるか、-iオプションをつけて起動すると設定で覚えたWindow座標を無視)</summary>
-        private bool IsWindowInit = false;
-        /// <summary>精度スライダー編集制御フラグ</summary>
-        private bool IsaccuracyChane = false;
         /// <summary>モデルダウンロード終了フラグ(非同期コールバックで修了判定)</summary>
         private bool DLComplete = true;
         /// <summary>閾値変更時の結果反映フラグ(画面反映のディレイ処理用)</summary>
@@ -169,7 +163,7 @@ namespace WD14TaggerWin
         {
             // 設定情報の保存
             string? interrogator = ((ComboItemObject)interrogatorList.SelectedItem)?.Value;
-            string threshold = accuracyTextBox.Text;
+            string threshold = thresholdSlider.Value.ToString();
             if (interrogator != null) ConfigFile.Interrogator = interrogator;
             ConfigFile.Threshold = threshold;
             ScreenToConfig();
@@ -202,7 +196,7 @@ namespace WD14TaggerWin
             {
                 // 表示結果を消去してタグを結果に反映
                 ResultTags.InitViewResult();
-                ResultTags.ApplyThreshold((float)accuracySlider.Value, ConfigFile.IsUnderScoreToSpace, ConfigFile.IsTagBracketsEscape);
+                ResultTags.ApplyThreshold((float)thresholdSlider.Value, ConfigFile.IsUnderScoreToSpace, ConfigFile.IsTagBracketsEscape);
                 CreateResultTags();
 
                 IsResultUpdate = false;
@@ -217,7 +211,7 @@ namespace WD14TaggerWin
         private void Button_Click_Interogate(object sender, RoutedEventArgs e)
         {
             // タグ付対象の画像がない場合
-            if (TagetImage == null) return;
+            if (ResultTags.TagetImage == null) return;
 
             // 推論結果をクリア
             ClearTags();
@@ -227,89 +221,17 @@ namespace WD14TaggerWin
         }
 
         /// <summary>
-        /// スライダー変更
+        /// 閾値変更
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void thrsthold_ValueChanged(object sender, EventArgs e)
         {
-            if (IsaccuracyChane) return;
-            IsaccuracyChane = true;
-
-            // 結果をテキストに設定
-            accuracyTextBox.Text = accuracySlider.Value.ToString("0.00");
+            // タグ付対象の画像がない場合
+            if (ResultTags.TagetImage == null) return;
 
             // タイマーで結果を画面に反映
             IsResultUpdate = true;
-
-            IsaccuracyChane = false;
-        }
-
-        /// <summary>
-        /// テキスト変更
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (IsaccuracyChane) return;
-            IsaccuracyChane = true;
-
-            // double.Parseチェック
-            double res = accuracySlider.Minimum;
-            if (double.TryParse(accuracyTextBox.Text, out res))
-            {
-                // 正常な数値の場合
-                if (res < accuracySlider.Minimum) res = accuracySlider.Minimum;
-                if (res > accuracySlider.Maximum) res = accuracySlider.Maximum;
-            }
-            else
-            {
-                // 数値でない文字を入れた場合
-                accuracyTextBox.Text = res.ToString("0.00");
-            }
-            // 結果をスライダーに設定
-            accuracySlider.Value = res;
-
-            // タイマーで結果を画面に反映
-            IsResultUpdate = true;
-
-            IsaccuracyChane = false;
-        }
-
-        /// <summary>
-        /// 精度テキストのフォーカス取得
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void accuracyTextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            // フォーカスを得たら全選択
-            accuracyTextBox.SelectAll();
-        }
-
-        /// <summary>
-        /// 精度テキストのローカルマウス左クリック
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void accuracyTextBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            // フォーカスを得てない場合はフォーカスを得てハンドル処理を修了
-            if (accuracyTextBox.IsFocused) return;
-            accuracyTextBox.Focus();
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// マウスホイール操作
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Threshold_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            float diff = (e.Delta / 120) * 0.01f;
-            accuracySlider.Value += diff;
         }
 
         /// <summary>
@@ -405,7 +327,7 @@ namespace WD14TaggerWin
         {
             Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
             openFileDialog.Filter = "画像ファイル|*.png;*.jpg;*.jpeg;*.webp;*.bmp|全てのファイル|*.*";
-            if (TargetImagePath != string.Empty)openFileDialog.DefaultDirectory = TargetImagePath;
+            if (ResultTags.TargetImagePath != string.Empty)openFileDialog.DefaultDirectory = Path.GetDirectoryName(ResultTags.TargetImagePath);
             if (openFileDialog.ShowDialog() == true)
             {
                 ImageLoad(openFileDialog.FileName);
@@ -429,6 +351,7 @@ namespace WD14TaggerWin
         /// <param name="e"></param>
         private void Button_Click_Tag(object sender, RoutedEventArgs e)
         {
+            // クリップボードにコピー
             System.Windows.Clipboard.SetText(resultTextBox.Text);
         }
 
@@ -501,7 +424,7 @@ namespace WD14TaggerWin
             interrogatorList.SelectedIndex = selIndex;
 
             // 閾値設定
-            accuracyTextBox.Text = ConfigFile.Threshold;
+            thresholdSlider.Value = double.Parse(ConfigFile.Threshold);
         }
 
         /// <summary>
@@ -510,44 +433,25 @@ namespace WD14TaggerWin
         /// <param name="filePath">画像ファイルパス</param>
         private void ImageLoad(string filePath)
         {
-
             try
             {
-                // 対象イメージをロード
-                if (TagetImage != null)
+                // イメージをロードして画面に表示
+                sourceImage.Source = ResultTags.LoadImage(filePath);
+
+                if (ResultTags.TagetImage != null)
                 {
-                    // 以前の画像を解放
-                    TagetImage.Dispose();
-                    TagetImage = null;
+                    // 画像にInfoが無いかチェック
+                    (string, string, string, string) prompt = ImageTagCheck.CheckImageInfo(ResultTags.TagetImage, filePath);
+                    ImageInfo.SetContents(prompt.Item1, prompt.Item2, prompt.Item3, prompt.Item4);
+
+                    // 推論結果をクリア
+                    ClearTags();
+
+                    // ロードしたら測推論の場合
+                    if (ConfigFile.IsDropToTagging) DoTagging();
                 }
-                TagetImage = SixLabors.ImageSharp.Image.Load<SixLabors.ImageSharp.PixelFormats.Rgba32>(filePath);
-
-                // 読み込み画像をImageに出力
-                var stream = new System.IO.MemoryStream();
-                TagetImage.SaveAsBmp(stream);
-                stream.Seek(0, System.IO.SeekOrigin.Begin);
-                BitmapSource bitmapSource =
-                    System.Windows.Media.Imaging.BitmapFrame.Create(
-                        stream,
-                        System.Windows.Media.Imaging.BitmapCreateOptions.None,
-                        System.Windows.Media.Imaging.BitmapCacheOption.OnLoad
-                    );
-                sourceImage.Source = bitmapSource;
-
-                // 画像にInfoが無いかチェック
-                (string, string, string, string) prompt = ImageTagCheck.CheckImageInfo(TagetImage, filePath);
-                ImageInfo.SetContents(prompt.Item1, prompt.Item2, prompt.Item3, prompt.Item4);
-
-                // 推論結果をクリア
-                ClearTags();
-
-                // 推論対象の画像設定と推論可能フラグをON
-                TargetImagePath = filePath;
-
-                if (ConfigFile.IsDropToTagging) DoTagging();
             }
             catch { }
-
         }
 
         /// <summary>
@@ -632,7 +536,7 @@ namespace WD14TaggerWin
         {
             // 選択interrogatorと閾値を取得
             string interrogator = ((ComboItemObject)interrogatorList.SelectedItem).Value;
-            string threshold = accuracyTextBox.Text;
+            string threshold = thresholdSlider.Value.ToString();
             ConfigFile.Interrogator = interrogator;
             ConfigFile.Threshold = threshold;
             // 画面位置を取得/設定ファイルを保存
@@ -667,7 +571,7 @@ namespace WD14TaggerWin
             progressD.DlProgress.Value = 0.0;
             progressD.Visibility = Visibility.Visible;
 
-            // ダウンロード開始(非同期タスク)
+            // ダウンロード開始(非同期タスク/ダウンロード進捗コールバックを登録)
             DLComplete = false;
             Interrogators[key]?.Download(key, dlTargetPath, new AbstractTaggerModel.DLProgress(DLProgress));
 
@@ -722,10 +626,11 @@ namespace WD14TaggerWin
             if (model.IsCacheAvail == false) return;
 
             // 処理画像がない場合は中断
-            if (TagetImage == null) return;
+            if (ResultTags.TagetImage == null) return;
 
             // 閾値準備
-            float threthold = float.Parse(ConfigFile.Threshold);
+            float threshold = float.Parse(ConfigFile.Threshold);
+            float threshold2 = float.Parse(ConfigFile.Threshold2);
 
             // プログレスを表示に
             progressT.Visibility = Visibility.Visible;
@@ -735,11 +640,11 @@ namespace WD14TaggerWin
             await Task.Run(() =>
             {
                 // 推論の実施と結果の格納
-                ResultTags.SetResult(model.interrogate(TagetImage, ConfigFile.IsMLDanbooruResizeNew));
+                ResultTags.SetResult(model.interrogate(ResultTags.TagetImage, ConfigFile.IsMLDanbooruResizeNew, threshold2));
 
                 // 閾値を推論結果に適用
                 ResultTags.InitViewResult();
-                ResultTags.ApplyThreshold(threthold, ConfigFile.IsUnderScoreToSpace, ConfigFile.IsTagBracketsEscape);
+                ResultTags.ApplyThreshold(threshold, ConfigFile.IsUnderScoreToSpace, ConfigFile.IsTagBracketsEscape);
             });
 
             // プログレスを非表示に

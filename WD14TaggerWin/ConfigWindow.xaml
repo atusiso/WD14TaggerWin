@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WD14TaggerWin"
         mc:Ignorable="d"
-        Title="設定画面" Height="337" Width="697" Loaded="Window_Loaded" MinWidth="647" MinHeight="322">
+        Title="設定画面" Height="410" Width="697" Loaded="Window_Loaded" MinWidth="647" MinHeight="382">
     <Grid>
         <Grid.LayoutTransform>
             <ScaleTransform x:Name="Scale"/>
@@ -22,5 +22,7 @@
         <CheckBox x:Name="IsResultToClipboad" Content="推論結果をクリップボードに自動コピー" HorizontalAlignment="Left" Margin="19,168,0,0" VerticalAlignment="Top" Cursor="Hand"/>
         <CheckBox x:Name="IsWinPosMemory" Content="ウィンドウの位置を覚える" HorizontalAlignment="Left" Margin="19,197,0,0" VerticalAlignment="Top" Cursor="Hand"/>
         <CheckBox x:Name="IsMLDanbooruResizeNew" Content="ML Danbooruモデルの画像縮小方式を変更する" HorizontalAlignment="Left" Margin="19,229,0,0" VerticalAlignment="Top" Cursor="Hand"/>
+        <Label Content="PixaiTaggerのキャラタグのthreshold" HorizontalAlignment="Left" Margin="19,264,0,0" VerticalAlignment="Top"/>
+        <local:NumericSliderPrompt Margin="216,259,0,0" HorizontalAlignment="Left" Width="349" Height="36" VerticalAlignment="Top" x:Name="thrsholdSlider" Text="閾値" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" TickFrequency="0.01" />
     </Grid>
 </Window>

@@ -15,7 +15,7 @@
     <IncludeNativeLibrariesInSingleFile>true</IncludeNativeLibrariesInSingleFile>
     <ApplicationIcon>tag_icon.ico</ApplicationIcon>
     <PlatformTarget>x64</PlatformTarget>
-    <FileVersion>1.0.0.7</FileVersion>
+    <FileVersion>1.0.0.8</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

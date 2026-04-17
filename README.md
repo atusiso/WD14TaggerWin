@@ -13,18 +13,22 @@ WD14taggerをWindows用のアプリとしてc#に移植しました。
 また、VRAMをtaggerでは利用せずに生成中の待ち時間にも安心してCPU側のメモリで推論を行う作りです。  
 * LoRA作成に使う場合は、それ用にツールを使った方が効率がいいと思うのでフォルダ単位の連続バッチ等は未実装です。
   
-対応しているinterrogatorの種別はWaifuDiffusion v3、ML-Danbooru、Camie Tagger v2、CL Taggerとなります。  
+対応しているinterrogatorの種別はWaifuDiffusion v3、ML-Danbooru、Camie Tagger v2、CL Tagger、Pixai Taggerとなります。  
     
 wd14-tagger-standaloneのソースコードを読みながら移植を行っています。  
 * 機能はwd14-tagger-standaloneを参考にすることで実現しています。  
 * また、発生する不具合はこのソフトのものであり、wd14-tagger-standaloneはなんら不具合に関与していません。
 
+CL EVA02 ONNX TaggerのApp公開部分のソースコードも読みながら移植を行っています。  
+* 同様に、発生する不具合はこのソフトのものであり、CL EVA02 ONNX Taggerはなんら不具合に関与していません。  
+
+Pixai-Tagger-v0.9-onnxのデモのソースコードも読みながら移植を行っています。  
+* 同様に、発生する不具合はこのソフトのものであり、Pixai-Tagger-v0.9-onnxはなんら不具合に関与していません。  
+
 ## 利用方法
 
-Windows(x64)の環境用バイナリは[ここ](https://github.com/atusiso/WD14TaggerWin/releases)からZIPをダウンロードしたら解凍して下記の3つのファイルを同じフォルダに配置してWD14TaggerWin.exeをダブルクリックで起動します。  
+Windows(x64)の環境用バイナリは[ここ](https://github.com/atusiso/WD14TaggerWin/releases)からZIPをダウンロードしたら解凍して下記のファイルを適当なフォルダに配置してWD14TaggerWin.exeをダブルクリックで起動します。  
 * WD14TaggerWin.exe  
-* onnxruntime.lib  
-* onnxruntime_providers_shared.lib  
 スマートアプリコントロール等に怒られた場合はあきらめてください。  
 推論開始で落ちる場合は[Visual C++ v14 再頒布可能パッケージ](https://aka.ms/vc14/vc_redist.x64.exe)をインストールしてみてください。  
   
@@ -102,5 +106,5 @@ Windows(x64)の環境用バイナリは[ここ](https://github.com/atusiso/WD14T
 * 1.0.0.5 画面表示処理の修正
 * 1.0.0.6 CL-Taggerに対応
 * 1.0.0.7 モデルの権利表示追加、アイコンをxaml化
-
+* 1.0.0.8 PixaiTaggerに対応
 

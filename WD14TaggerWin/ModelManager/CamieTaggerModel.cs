@@ -57,60 +57,63 @@ namespace WD14TaggerWin.ModelManager
                     {
                         // rootエレメント取得
                         JsonElement root = doc.RootElement;
-                        // dataset_infoキーのプロパティ取得
-                        JsonElement dataSetInfo;
-                        if ((root.ValueKind == JsonValueKind.Object) && (root.TryGetProperty("dataset_info", out dataSetInfo)))
+                        if (root.ValueKind == JsonValueKind.Object)
                         {
-                            // tag_mappingキーのプロパティ取得
+                            // dataset_infoキーのプロパティ取得
+                            JsonElement dataSetInfo;
                             JsonElement tagMapping;
-                            if ((dataSetInfo.ValueKind == JsonValueKind.Object) && (dataSetInfo.TryGetProperty("tag_mapping", out tagMapping)))
+                            if (root.TryGetProperty("dataset_info", out dataSetInfo) && (dataSetInfo.ValueKind == JsonValueKind.Object))
                             {
-                                // idx_to_tagキーのプロパティ取得
-                                JsonElement idx2Tag;
-                                if ((tagMapping.ValueKind == JsonValueKind.Object) && (tagMapping.TryGetProperty("idx_to_tag", out idx2Tag)))
-                                {
-                                    if (idx2Tag.ValueKind == JsonValueKind.Object)
-                                    {
-                                        // タグをキーに結果のindexを保持する辞書を生成
-                                        foreach (JsonProperty property in idx2Tag.EnumerateObject())
-                                        {
-                                            string key = property.Name;
-                                            if (property.Value.ValueKind == JsonValueKind.String)
-                                            {
-                                                string? tag = property.Value.GetString();
+                                // tag_mappingキーのプロパティ取得
+                                if (dataSetInfo.TryGetProperty("tag_mapping", out tagMapping) == false) tagMapping = root;
+                            }
+                            else tagMapping = root;
 
-                                                if (tag != null)
+                            // idx_to_tagキーのプロパティ取得
+                            JsonElement idx2Tag;
+                            if ((tagMapping.ValueKind == JsonValueKind.Object) && (tagMapping.TryGetProperty("idx_to_tag", out idx2Tag)))
+                            {
+                                if (idx2Tag.ValueKind == JsonValueKind.Object)
+                                {
+                                    // タグをキーに結果のindexを保持する辞書を生成
+                                    foreach (JsonProperty property in idx2Tag.EnumerateObject())
+                                    {
+                                        string key = property.Name;
+                                        if (property.Value.ValueKind == JsonValueKind.String)
+                                        {
+                                            string? tag = property.Value.GetString();
+
+                                            if (tag != null)
+                                            {
+                                                int idx;
+                                                if ((idxToTag.ContainsKey(tag) == false) && (int.TryParse(key, out idx)))
                                                 {
-                                                    int idx;
-                                                    if ((idxToTag.ContainsKey(tag) == false) && (int.TryParse(key, out idx)))
-                                                    {
-                                                        idxToTag.Add(tag, idx);
-                                                    }
+                                                    idxToTag.Add(tag, idx);
                                                 }
                                             }
                                         }
                                     }
                                 }
+                            }
 
-                                // タグをキーにカテゴリを保持する辞書を生成
-                                JsonElement Tag2Category;
-                                if ((tagMapping.ValueKind == JsonValueKind.Object) && (tagMapping.TryGetProperty("tag_to_category", out Tag2Category)))
+                            // タグをキーにカテゴリを保持する辞書を生成
+                            JsonElement Tag2Category;
+                            if ((tagMapping.ValueKind == JsonValueKind.Object) && (tagMapping.TryGetProperty("tag_to_category", out Tag2Category)))
+                            {
+                                if (Tag2Category.ValueKind == JsonValueKind.Object)
                                 {
-                                    if (Tag2Category.ValueKind == JsonValueKind.Object)
+                                    foreach (JsonProperty property in Tag2Category.EnumerateObject())
                                     {
-                                        foreach (JsonProperty property in Tag2Category.EnumerateObject())
+                                        string key = property.Name;
+                                        if (property.Value.ValueKind == JsonValueKind.String)
                                         {
-                                            string key = property.Name;
-                                            if (property.Value.ValueKind == JsonValueKind.String)
-                                            {
-                                                string? category = property.Value.GetString();
-                                                if ((category != null) && (tagToCategory.ContainsKey(key) == false)) tagToCategory.Add(key, category);
-                                            }
+                                            string? category = property.Value.GetString();
+                                            if ((category != null) && (tagToCategory.ContainsKey(key) == false)) tagToCategory.Add(key, category);
                                         }
                                     }
                                 }
-
                             }
+
                         }
                     }
                 }
@@ -125,7 +128,7 @@ namespace WD14TaggerWin.ModelManager
         /// </summary>
         /// <param name="imagePath">対象イメージファイルパス</param>
         /// <returns>結果タグ辞書</returns>
-        public override (Dictionary<string, float>, Dictionary<string, float>, Dictionary<string, string>) interrogate(Image<Rgba32> image, bool isFlag)
+        public override (Dictionary<string, float>, Dictionary<string, float>, Dictionary<string, string>) interrogate(Image<Rgba32> image, bool isFlag, float optionalThreshold)
         {
             Dictionary<string, float> ratingsRes = new Dictionary<string, float>();
             Dictionary<string, float> tagsRes = new Dictionary<string, float>();
@@ -164,7 +167,7 @@ namespace WD14TaggerWin.ModelManager
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        // python実装に習う
+                        // python実装に習う(0～1のスケーリング)
                         input[0, 0, y, x] = (souirceImg[x, y].R / 255.0f);
                         input[0, 1, y, x] = (souirceImg[x, y].G / 255.0f);
                         input[0, 2, y, x] = (souirceImg[x, y].B / 255.0f);

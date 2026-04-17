@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.Marshalling;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SixLabors.ImageSharp;
@@ -14,10 +14,10 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace WD14TaggerWin.ModelManager
 {
-    public class ClTaggerModel : AbstractTaggerModel
+    public class PixaiTaggerModel : AbstractTaggerModel
     {
         /// <summary>モデル種別</summary>
-        public override modelType ModelType { get; } = modelType.ClTaggerInterrogator;
+        public override modelType ModelType { get; } = modelType.PiaiTaggerInterrogator;
 
         /// <summary>モデル実体</summary>
         protected InferenceSession? _session = null;
@@ -45,53 +45,64 @@ namespace WD14TaggerWin.ModelManager
         /// </summary>
         /// <param name="idxToTag"></param>
         /// <param name="tagToCategory"></param>
-        private void ReadTag(Dictionary<string, int> idxToTag, Dictionary<string, string> tagToCategory)
+        private void ReadTag(Dictionary<string, int> idxToTag, Dictionary<string, string> tagToCategory, Dictionary<string, List<string>> tagIps)
         {
-            // タグファイルのjsonを読み込む
-            using (FileStream jsonFile = new FileStream(tag_file_path, FileMode.Open, FileAccess.Read))
-            using (StreamReader reader = new StreamReader(jsonFile, Encoding.UTF8))
+            using (var tfp = new Microsoft.VisualBasic.FileIO.TextFieldParser(tag_file_path))
             {
-                // ファイルを読み込む
-                string jsonString = reader.ReadToEnd();
-                try
+                tfp.TextFieldType = Microsoft.VisualBasic.FileIO.FieldType.Delimited;
+                tfp.SetDelimiters(",");
+                // ヘッダ空読み
+                if (!tfp.EndOfData)
                 {
-                    using (JsonDocument doc = JsonDocument.Parse(jsonString))
+                    string[]? headerrow = tfp.ReadFields();
+                }
+                // 残りの行処理
+                while (!tfp.EndOfData)
+                {
+                    string[]? rowData = tfp.ReadFields();
+                    if ((rowData != null) && (rowData.Length > 5))
                     {
-                        // rootエレメント取得
-                        JsonElement root = doc.RootElement;
-                        if (root.ValueKind == JsonValueKind.Object)
+                        int idx = int.Parse(rowData[0]);
+                        string tag = rowData[2];
+                        string cat = rowData[3];
+                        string ips = rowData[5];
+
+                        idxToTag.Add(tag, idx);
+                        // カテゴリgeneral
+                        if (cat == "0")
                         {
-                            // root辞書をループ
-                            foreach (JsonProperty property in root.EnumerateObject())
+                            tagToCategory.Add(tag, "general");
+                            tagIps.Add(tag, new List<string>());
+                        }
+                        // カテゴリcharacter
+                        else if (cat == "4")
+                        {
+                            tagToCategory.Add(tag, "character");
+                            tagIps.Add(tag, new List<string>());
+
+                            // characterはips列にjsonリストがある
+                            try
                             {
-                                // keyがindex、valueがJsonValueKind.Object
-                                if (property.Value.ValueKind == JsonValueKind.Object)
+                                using (JsonDocument doc = JsonDocument.Parse(ips))
                                 {
-                                    int index = int.Parse(property.Name);
-                                    JsonElement tag;
-                                    if ((property.Value.TryGetProperty("tag", out tag)) && (tag.ValueKind == JsonValueKind.String))
+                                    JsonElement root = doc.RootElement;
+                                    if (root.ValueKind == JsonValueKind.Array)
                                     {
-                                        string? tagName = tag.GetString();
-
-                                        JsonElement category;
-                                        string categoryName = "Unknown";
-                                        if ((property.Value.TryGetProperty("category", out category)) && (category.ValueKind == JsonValueKind.String))
+                                        foreach (JsonElement node in root.EnumerateArray())
                                         {
-                                            categoryName = category.GetString() ?? "Unknown";
-                                        }
-
-                                        if (tagName != null)
-                                        {
-                                            idxToTag.Add(tagName, index);
-                                            tagToCategory.Add(tagName, categoryName);
+                                            if (node.ValueKind == JsonValueKind.String)
+                                            {
+                                                string? ip = node.GetString();
+                                                if (ip != null) tagIps[tag].Add(ip);
+                                            }
                                         }
                                     }
                                 }
                             }
+                            catch { }
                         }
                     }
                 }
-                catch { }
             }
         }
 
@@ -119,26 +130,31 @@ namespace WD14TaggerWin.ModelManager
             // タグの読み込みと辞書の作成
             var idxToTag = new Dictionary<string, int>();
             var tagToCategory = new Dictionary<string, string>();
-            ReadTag(idxToTag, tagToCategory);
+            Dictionary<string, List<string>> tagIps = new Dictionary<string, List<string>>();
+            ReadTag(idxToTag, tagToCategory, tagIps);
 
             // モデルのイメージサイズ取得
             var firstInput = _session.InputMetadata.First().Value;
 
             bool mode = false;
-            int width = 448;
-            int height = 448;
+            int width;
+            int height;
             DenseTensor<float> input;
 
             // モデルのinput構造が変わることがあるのか不明の為一応処理(Python版ではelse側の処理を決め打ちで実施していた)
             if (firstInput.Dimensions[1] == 3)
             {
                 // CHW
+                height = firstInput.Dimensions[2];
+                width = firstInput.Dimensions[3];
                 input = new DenseTensor<float>(new[] { 1, 3, height, width });
                 mode = true;
             }
             else
             {
                 // HWC
+                height = firstInput.Dimensions[1];
+                width = firstInput.Dimensions[2];
                 input = new DenseTensor<float>(new[] { 1, height, width, 3 });
             }
 
@@ -182,7 +198,17 @@ namespace WD14TaggerWin.ModelManager
             using (var results = _session.Run(inputs))
             {
                 // 結果の変換
-                var output = results.First().AsEnumerable<float>().ToArray();
+                float[]? output = null;
+                foreach (var outdata in results)
+                {
+                    var outval = outdata.AsEnumerable<float>().ToArray();
+                    if (outval.Length == idxToTag.Count)
+                    {
+                        output = outval;
+                        break;
+                    }
+                }
+                if (output == null) return (ratingsRes, tagsRes, categoryRes);
 
                 // タグインデックスに基づいて結果を合成
                 Dictionary<string, float> allTags = new Dictionary<string, float>();
@@ -191,23 +217,46 @@ namespace WD14TaggerWin.ModelManager
                     // インデックスが存在する場合
                     if (kvPair.Value < output.Length)
                     {
-                        // NANの場合0.0 無限の場合0～1に収束
-                        if (float.IsNaN(output[kvPair.Value])) output[kvPair.Value] = 0.0f;
-                        if (float.IsInfinity(output[kvPair.Value])) output[kvPair.Value] = 1.0f;
-                        if (float.IsNegativeInfinity(output[kvPair.Value])) output[kvPair.Value] = 0.0f;
-
                         // Softmax処理
-                        float prob = (1.0f / (1.0f + (float)Math.Exp(-Math.Clamp(output[kvPair.Value], -30, 30))));
+                        float prob = (1.0f / (1.0f + (float)Math.Exp(-output[kvPair.Value])));
                         string category = (tagToCategory.ContainsKey(kvPair.Key) ? tagToCategory[kvPair.Key] : string.Empty);
 
-                        // カテゴリがratingの場合はrating結果に移す
-                        if (category.ToLower() == "rating")
+                        // カテゴリがcharacterの場合
+                        if (category.ToLower() == "character")
                         {
-                            ratingsRes.Add(kvPair.Key, prob);
+                            // optionalThreshold以上の結果のみ登録する
+                            if ((prob >= optionalThreshold))
+                            {
+                                // タグ結果に登録、当該タグのカテゴリを辞書に設定
+                                tagsRes.Add(kvPair.Key, prob);
+                                categoryRes.Add(kvPair.Key, category);
+
+                                // キャラクタカテゴリに紐づくipカテゴリを追加
+                                if (tagIps.ContainsKey(kvPair.Key))
+                                {
+                                    foreach (string ip in tagIps[kvPair.Key])
+                                    {
+                                        if (tagsRes.ContainsKey(ip) == false)
+                                        {
+                                            tagsRes.Add(ip, prob);
+                                            categoryRes.Add(ip, "ip");
+                                        }
+                                        else
+                                        {
+                                            // 重複した場合は大きい結果を保持
+                                            if (prob > tagsRes[ip])
+                                            {
+                                                tagsRes[ip] = prob;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        // それ以外はタグ結果に登録、当該タグのカテゴリを辞書に設定
+                        // カテゴリがcharacter以外の場合はそのまま登録
                         else
                         {
+                            // タグ結果に登録、当該タグのカテゴリを辞書に設定
                             tagsRes.Add(kvPair.Key, prob);
                             categoryRes.Add(kvPair.Key, category);
                         }
@@ -230,5 +279,6 @@ namespace WD14TaggerWin.ModelManager
                 IsModelLoad = false;
             }
         }
+
     }
 }

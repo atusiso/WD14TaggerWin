@@ -83,7 +83,7 @@ namespace WD14TaggerWin.ModelManager
         /// </summary>
         /// <param name="imagePath">対象イメージファイルパス</param>
         /// <returns>結果タグ辞書</returns>
-        public override (Dictionary<string, float>, Dictionary<string, float>, Dictionary<string, string>) interrogate(Image<Rgba32> image, bool isFlag)
+        public override (Dictionary<string, float>, Dictionary<string, float>, Dictionary<string, string>) interrogate(Image<Rgba32> image, bool isFlag, float optionalThreshold)
         {
             Dictionary<string, float> ratingsRes = new Dictionary<string, float>();
             Dictionary<string, float> tagsRes = new Dictionary<string, float>();
@@ -121,8 +121,8 @@ namespace WD14TaggerWin.ModelManager
             else
             {
                 // HWC
-                width = firstInput.Dimensions[2];
                 height = firstInput.Dimensions[1];
+                width = firstInput.Dimensions[2];
                 input = new DenseTensor<float>(new[] { 1, height, width, 3 });
             }
 

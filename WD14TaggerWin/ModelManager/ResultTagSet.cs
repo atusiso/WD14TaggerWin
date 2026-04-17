@@ -3,11 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
+using SixLabors.ImageSharp;
 
 namespace WD14TaggerWin.ModelManager
 {
-    internal class ResultTagSet
+    internal class ResultTagSet : IDisposable
     {
+        /// <summary>推論対象画像パス</summary>
+        public string TargetImagePath = string.Empty;
+        /// <summary>推論対象画像実体</summary>
+        public SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>? TagetImage = null;
+
         /// <summary>推論結果：レーティング結果</summary>
         public Dictionary<string, float> ratingsRes = new();
         /// <summary>推論結果：タグ結果</summary>
@@ -23,11 +30,91 @@ namespace WD14TaggerWin.ModelManager
         /// <summary>閾値適用結果：タグ辞書</summary>
         public Dictionary<string, float> resultTagDic = new();
 
+        /// <summary>リソース破棄制御フラグ</summary>
+        private bool disposedValue;
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
         public ResultTagSet()
         {
+        }
+
+        #region "IDisposable"
+        /// <summary>
+        /// リソースの破棄
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージド状態を破棄します (マネージド オブジェクト)
+                }
+
+                // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、ファイナライザーをオーバーライドします
+                if (TagetImage != null)
+                {
+                    // 以前の画像を解放
+                    TagetImage.Dispose();
+                    TagetImage = null;
+                }
+
+                // TODO: 大きなフィールドを null に設定します
+                disposedValue = true;
+            }
+        }
+
+        /// <summary>
+        /// ファイナライザ
+        /// </summary>
+        ~ResultTagSet()
+        {
+            // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
+            Dispose(disposing: false);
+        }
+
+        /// <summary>
+        /// リソースの破棄
+        /// </summary>
+        public void Dispose()
+        {
+            // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// イメージのロードを実施
+        /// </summary>
+        /// <param name="filePath">ロードファイルパス</param>
+        /// <returns>画面表示用BitmapSource</returns>
+        public BitmapSource LoadImage(string filePath)
+        {
+            // 対象イメージをロード
+            if (TagetImage != null)
+            {
+                // 以前の画像を解放
+                TagetImage.Dispose();
+                TagetImage = null;
+            }
+            TagetImage = SixLabors.ImageSharp.Image.Load<SixLabors.ImageSharp.PixelFormats.Rgba32>(filePath);
+
+            // イメージのパスを保持
+            TargetImagePath = filePath;
+
+            // 読み込み画像をBitmapSourceに変換して応答
+            var stream = new System.IO.MemoryStream();
+            TagetImage.SaveAsBmp(stream);
+            stream.Seek(0, System.IO.SeekOrigin.Begin);
+            return System.Windows.Media.Imaging.BitmapFrame.Create(
+                    stream,
+                    System.Windows.Media.Imaging.BitmapCreateOptions.None,
+                    System.Windows.Media.Imaging.BitmapCacheOption.OnLoad
+                );
         }
 
         /// <summary>

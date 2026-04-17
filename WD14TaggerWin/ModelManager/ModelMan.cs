@@ -57,6 +57,8 @@ namespace WD14TaggerWin.ModelManager
                 { name="Cl Tagger 1.02", repo_id="cella110n/cl_tagger", model_path= "cl_tagger_1_02/model.onnx", tag_path = "cl_tagger_1_02/tag_mapping.json", license = AbstractTaggerModel.licenseType.Apache2_0, author="cella110n", siteuri="https://huggingface.co/cella110n/cl_tagger/"}}
             ,{ "cl-tagger-1.02_opt", new ClTaggerModel
                 { name="Cl Tagger 1.02 optimized", repo_id="cella110n/cl_tagger", model_path= "cl_tagger_1_02/model_optimized.onnx", tag_path = "cl_tagger_1_02/tag_mapping.json", license = AbstractTaggerModel.licenseType.Apache2_0, author="cella110n", siteuri="https://huggingface.co/cella110n/cl_tagger/"}}
+            ,{ "pixai-tagger-v0.9-onnx", new PixaiTaggerModel
+                { name="PixAI Tagger v0.9 onnx", repo_id="deepghs/pixai-tagger-v0.9-onnx", model_path= "model.onnx", tag_path = "selected_tags.csv", license = AbstractTaggerModel.licenseType.Apache2_0, author="deepghs", siteuri="https://huggingface.co/deepghs/pixai-tagger-v0.9-onnx/"}}
         };
 
         /// <summary>キャッシュパス</summary>
